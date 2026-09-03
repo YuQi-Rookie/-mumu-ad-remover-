@@ -1,0 +1,1817 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuMu 模拟器一键去广告工具</title>
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap">
+<style>
+  :root {
+    --bg: #0a0e14;
+    --bg-elevated: #111820;
+    --bg-card: #151d28;
+    --border: #1e2a38;
+    --border-hover: #2a3a4d;
+    --text: #e6edf3;
+    --text-muted: #8b98a9;
+    --text-dim: #5c6b7d;
+    --accent: #00d4aa;
+    --accent-dim: #00a885;
+    --accent-glow: rgba(0, 212, 170, 0.15);
+    --danger: #ff6b6b;
+    --warning: #ffd93d;
+    --success: #00d4aa;
+    --code-bg: #0d1117;
+    --font-mono: 'JetBrains Mono', 'Consolas', 'Monaco', monospace;
+    --font-sans: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(0, 212, 170, 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(0, 150, 255, 0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10, 14, 20, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  .nav-logo .logo-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--bg);
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--accent); }
+
+  @media (max-width: 640px) {
+    .nav-links { display: none; }
+  }
+
+  .hero {
+    padding: 72px 0 48px;
+    text-align: center;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+  }
+
+  .hero-badge .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+  }
+
+  .hero h1 .highlight {
+    background: linear-gradient(135deg, var(--accent), #00b4d8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    font-size: 16px;
+    color: var(--text-muted);
+    max-width: 560px;
+    margin: 0 auto 32px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    text-decoration: none;
+    font-family: var(--font-sans);
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+    box-shadow: 0 4px 20px var(--accent-glow);
+  }
+
+  .btn-primary:hover {
+    background: #00e6b8;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 28px rgba(0, 212, 170, 0.3);
+  }
+
+  .btn-secondary {
+    background: var(--bg-card);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--border-hover);
+    background: var(--bg-elevated);
+  }
+
+  .btn svg { width: 16px; height: 16px; }
+
+  section { padding: 48px 0; }
+
+  .section-header { margin-bottom: 28px; }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+  }
+
+  .section-title {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .section-desc {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-top: 8px;
+  }
+
+  .config-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .config-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .config-header h3 {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .config-body { padding: 24px; }
+
+  .form-group { margin-bottom: 24px; }
+  .form-group:last-child { margin-bottom: 0; }
+
+  .form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  .form-label .hint {
+    font-weight: 400;
+    color: var(--text-dim);
+    font-size: 12px;
+    margin-left: 8px;
+  }
+
+  .version-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  @media (max-width: 520px) {
+    .version-grid { grid-template-columns: 1fr; }
+  }
+
+  .version-option {
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--bg-elevated);
+  }
+
+  .version-option:hover { border-color: var(--border-hover); }
+
+  .version-option.active {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .version-option .v-name {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .version-option .v-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .option-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--bg-elevated);
+  }
+
+  .option-item:hover { border-color: var(--border-hover); }
+
+  .option-item.checked {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .checkbox {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    border: 2px solid var(--border-hover);
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .option-item.checked .checkbox {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .checkbox svg {
+    width: 12px;
+    height: 12px;
+    color: var(--bg);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .option-item.checked .checkbox svg { opacity: 1; }
+
+  .option-text .o-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .option-text .o-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  .generate-area {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .generate-area .btn {
+    flex: 1;
+    min-width: 160px;
+    justify-content: center;
+  }
+
+  .script-preview {
+    margin-top: 24px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: none;
+  }
+
+  .script-preview.show { display: block; }
+
+  .preview-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-elevated);
+  }
+
+  .preview-title {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .preview-title .file-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .preview-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .icon-btn {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font-sans);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .icon-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .icon-btn svg { width: 12px; height: 12px; }
+
+  .preview-body {
+    padding: 16px;
+    max-height: 360px;
+    overflow-y: auto;
+  }
+
+  .preview-body pre {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.7;
+    color: #c9d1d9;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  .preview-body::-webkit-scrollbar { width: 6px; }
+  .preview-body::-webkit-scrollbar-track { background: transparent; }
+  .preview-body::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 3px; }
+
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  @media (max-width: 720px) {
+    .steps-grid { grid-template-columns: 1fr; }
+  }
+
+  .step-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    position: relative;
+    transition: all 0.2s;
+  }
+
+  .step-card:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-2px);
+  }
+
+  .step-number {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--accent-glow);
+    border: 1px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .step-card h4 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .step-card p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .step-card .code-inline {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--accent);
+  }
+
+  .notice-box {
+    background: rgba(255, 217, 61, 0.06);
+    border: 1px solid rgba(255, 217, 61, 0.25);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-top: 24px;
+  }
+
+  .notice-box .notice-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--warning);
+    margin-bottom: 10px;
+  }
+
+  .notice-box ul { list-style: none; padding: 0; }
+
+  .notice-box li {
+    font-size: 13px;
+    color: var(--text-muted);
+    padding: 4px 0;
+    padding-left: 18px;
+    position: relative;
+    line-height: 1.6;
+  }
+
+  .notice-box li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 12px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--warning);
+  }
+
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .faq-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s;
+  }
+
+  .faq-item:hover { border-color: var(--border-hover); }
+
+  .faq-question {
+    padding: 18px 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .faq-question h4 {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .faq-toggle {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .faq-item.open .faq-toggle {
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: rotate(45deg);
+  }
+
+  .faq-toggle svg {
+    width: 14px;
+    height: 14px;
+    color: var(--text-muted);
+  }
+
+  .faq-item.open .faq-toggle svg { color: var(--bg); }
+
+  .faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+
+  .faq-item.open .faq-answer { max-height: 400px; }
+
+  .faq-answer-inner {
+    padding: 0 20px 18px;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  .restore-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .restore-info h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .restore-info p {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  footer {
+    padding: 40px 0;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+
+  footer p {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--bg-card);
+    border: 1px solid var(--accent);
+    color: var(--text);
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .toast svg { width: 16px; height: 16px; color: var(--accent); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <div class="logo-icon">M</div>
+      <span>MuMu Ad Remover</span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#generator">生成脚本</a></li>
+      <li><a href="#tutorial">使用教程</a></li>
+      <li><a href="#restore">还原方法</a></li>
+      <li><a href="#faq">常见问题</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container">
+
+  <header class="hero">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      <span>支持 MuMu 12 / 5.x / 6.x 全版本</span>
+    </div>
+    <h1>一键永久去除<br><span class="highlight">MuMu 模拟器所有广告</span></h1>
+    <p>自动生成 Windows 批处理脚本，屏蔽广告域名、锁定开屏广告、禁用弹窗服务、修改广告配置，不影响模拟器正常运行。</p>
+    <div class="hero-actions">
+      <a href="#generator" class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+        立即生成脚本
+      </a>
+      <a href="#tutorial" class="btn btn-secondary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        查看教程
+      </a>
+    </div>
+  </header>
+
+  <section id="generator">
+    <div class="section-header">
+      <div class="section-label">// SCRIPT GENERATOR</div>
+      <h2 class="section-title">生成去广告脚本</h2>
+      <p class="section-desc">选择你的 MuMu 版本和需要去除的广告类型，自动生成批处理脚本。</p>
+    </div>
+
+    <div class="config-panel">
+      <div class="config-header">
+        <h3>脚本配置</h3>
+        <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-dim);">.bat</span>
+      </div>
+      <div class="config-body">
+
+        <div class="form-group">
+          <label class="form-label">MuMu 版本 <span class="hint">不确定就选自动检测</span></label>
+          <div class="version-grid">
+            <div class="version-option active" data-version="auto">
+              <div class="v-name">自动检测</div>
+              <div class="v-desc">推荐，全版本适配</div>
+            </div>
+            <div class="version-option" data-version="new">
+              <div class="v-name">MuMu 5.x / 6.x</div>
+              <div class="v-desc">新版（含 V6.5.9）</div>
+            </div>
+            <div class="version-option" data-version="old">
+              <div class="v-name">MuMu 12 旧版</div>
+              <div class="v-desc">MuMuPlayer-12.0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">去广告选项 <span class="hint">建议全选</span></label>
+          <div class="options-list">
+            <div class="option-item checked" data-option="hosts">
+              <div class="checkbox">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="option-text">
+                <div class="o-title">屏蔽广告域名（Hosts）</div>
+                <div class="o-desc">在系统 hosts 文件中添加 10+ 广告/统计域名屏蔽规则，从网络层阻断广告请求。可能影响自动更新。</div>
+              </div>
+            </div>
+            <div class="option-item checked" data-option="splash">
+              <div class="checkbox">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="option-text">
+                <div class="o-title">去除开屏广告</div>
+                <div class="o-desc">清空并锁定 imageManager.json 开屏广告配置文件，同时锁定 startupImage 缓存目录，双重保障。</div>
+              </div>
+            </div>
+            <div class="option-item checked" data-option="config">
+              <div class="checkbox">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="option-text">
+                <div class="o-title">修改广告配置（Config）</div>
+                <div class="o-desc">在 config.ini 中写入 [AdConfig] 配置，强制 enable_ad=0、禁用个性化推荐和广告SDK动态加载。</div>
+              </div>
+            </div>
+            <div class="option-item checked" data-option="popup">
+              <div class="checkbox">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="option-text">
+                <div class="o-title">禁用弹窗广告服务</div>
+                <div class="o-desc">替换 MuMuPlayerService.exe 为空只读文件，阻止右下角弹窗广告和推送服务。</div>
+              </div>
+            </div>
+            <div class="option-item" data-option="overseas">
+              <div class="checkbox">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="option-text">
+                <div class="o-title">海外版模式（去除主界面推荐）</div>
+                <div class="o-desc">通过 adb 在 build.prop 中写入 ro.build.version.overseas=true，屏蔽主界面轮播Banner和「每日新发现」游戏推荐。需模拟器运行中且已开启Root+可写系统盘。</div>
+              </div>
+            </div>
+            <div class="option-item" data-option="updater">
+              <div class="checkbox">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="option-text">
+                <div class="o-title">禁用自动更新（可选）</div>
+                <div class="o-desc">禁用 MuMuPlayerUpdater.exe，防止更新后广告恢复。禁用后需手动下载更新包升级。</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="generate-area">
+          <button class="btn btn-primary" id="generateBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            生成去广告脚本
+          </button>
+          <button class="btn btn-secondary" id="generateRestoreBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            生成还原脚本
+          </button>
+        </div>
+
+        <div class="script-preview" id="scriptPreview">
+          <div class="preview-header">
+            <div class="preview-title">
+              <span class="file-dot"></span>
+              <span id="previewFileName">mumu_ad_remover.bat</span>
+            </div>
+            <div class="preview-actions">
+              <button class="icon-btn" id="copyBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                复制
+              </button>
+              <button class="icon-btn" id="downloadBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                下载
+              </button>
+            </div>
+          </div>
+          <div class="preview-body">
+            <pre id="scriptContent"></pre>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section id="tutorial">
+    <div class="section-header">
+      <div class="section-label">// HOW TO USE</div>
+      <h2 class="section-title">使用教程</h2>
+      <p class="section-desc">三步完成去广告，全程不到 1 分钟。</p>
+    </div>
+
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-number">1</div>
+        <h4>下载脚本</h4>
+        <p>在上方配置好选项后，点击「生成去广告脚本」→ 预览代码确认无误 → 点击下载保存 <span class="code-inline">.bat</span> 文件到桌面。</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">2</div>
+        <h4>管理员运行</h4>
+        <p>右键点击下载的脚本文件，选择「<span class="code-inline">以管理员身份运行</span>」。脚本会自动备份并执行所有去广告操作。</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">3</div>
+        <h4>重启模拟器</h4>
+        <p>脚本执行完成后，关闭并重新打开 MuMu 模拟器。广告已全部去除，享受清爽体验。</p>
+      </div>
+    </div>
+
+    <div class="notice-box">
+      <div class="notice-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        注意事项
+      </div>
+      <ul>
+        <li>必须以管理员身份运行脚本，否则无法修改系统 hosts 文件和程序目录。</li>
+        <li>运行前建议关闭 MuMu 模拟器，避免文件被占用导致操作失败。</li>
+        <li>脚本会自动备份 hosts 文件为 hosts.bak，如需还原可使用还原脚本。</li>
+        <li>屏蔽广告域名后，MuMu 模拟器的自动更新可能失效，需手动下载更新包。</li>
+        <li>脚本采用多路径自动检测，支持 MuMu 12 / 5.x / 6.x 全版本，自定义安装路径也能识别。</li>
+        <li>如果某一步显示"未找到"属于正常现象，说明该版本没有对应文件，不影响其他去广告操作。</li>
+        <li>「海外版模式」需要模拟器正在运行，且已在 设置-开发者选项 中开启 Root权限 和 可写系统盘，修改后需重启模拟器生效。</li>
+        <li>海外版模式可去除主界面轮播Banner和「每日新发现」游戏推荐，是去除主界面广告最有效的方法。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="restore">
+    <div class="section-header">
+      <div class="section-label">// RESTORE</div>
+      <h2 class="section-title">还原方法</h2>
+      <p class="section-desc">如果需要恢复广告或更新功能，使用还原脚本一键恢复。</p>
+    </div>
+
+    <div class="restore-section">
+      <div class="restore-info">
+        <h3>需要还原到原始状态？</h3>
+        <p>生成还原脚本，自动恢复 hosts 文件、开屏广告配置、config.ini 和服务文件。部分被替换的系统文件可能需要重新安装模拟器才能完全恢复。</p>
+      </div>
+      <button class="btn btn-secondary" id="restoreBtnBottom">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        生成还原脚本
+      </button>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="section-header">
+      <div class="section-label">// FAQ</div>
+      <h2 class="section-title">常见问题</h2>
+    </div>
+
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-question">
+          <h4>去广告后会影响模拟器运行吗？</h4>
+          <div class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+        </div>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">不会。脚本只针对广告相关的域名、缓存目录、广告配置和广告服务进程进行处理，不触碰模拟器核心运行文件。游戏运行、网络连接、性能表现都不受影响。唯一可能受影响的是自动更新功能（如果勾选了禁用更新选项）。</div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">
+          <h4>为什么必须以管理员身份运行？</h4>
+          <div class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+        </div>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">修改系统 hosts 文件（位于 C:\Windows\System32\drivers\etc\）、Program Files 目录下的程序文件，以及 config.ini 配置文件都需要管理员权限。如果不以管理员身份运行，脚本会检测到权限不足并提示退出，不会执行任何操作。</div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">
+          <h4>更新模拟器后广告又出现了怎么办？</h4>
+          <div class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+        </div>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">模拟器更新可能会覆盖被替换的广告服务文件和重置 config.ini 配置。更新后只需重新运行一次去广告脚本即可。建议勾选「禁用自动更新」选项，或者在更新后重新执行脚本。hosts 屏蔽规则和开屏广告锁定通常不会被更新覆盖。</div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">
+          <h4>脚本会被杀毒软件报毒吗？</h4>
+          <div class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+        </div>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">部分杀毒软件可能会对修改 hosts 文件和 Program Files 目录的批处理脚本发出警告，这是因为脚本执行了系统级修改操作，属于正常行为。脚本内容完全透明，你可以在预览区查看全部代码后再决定是否运行。如遇报毒，可选择「信任此文件」或临时关闭杀毒软件后运行。</div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">
+          <h4>我的 MuMu 安装在自定义路径，脚本还能用吗？</h4>
+          <div class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+        </div>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">脚本会自动扫描 8 个常见安装路径（C/D 盘的 Program Files、Program Files (x86)、AppData\Local 等），绝大多数自定义路径都能识别。如果安装在非常特殊的路径，弹窗服务禁用部分可能无法自动执行，但 hosts 屏蔽、开屏广告去除和 config.ini 修改仍然有效。你可以手动编辑脚本，将 MUMU_DIR 变量改为你的实际安装路径。</div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">
+          <h4>V6.5.9 版本适用吗？脚本做了哪些针对性优化？</h4>
+          <div class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+        </div>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">完全适用。针对 V6.x 新版做了以下优化：①数据目录使用新版路径 %APPDATA%\Netease\MuMuPlayer（无版本号后缀）；②开屏广告采用 imageManager.json 覆写+锁定方式，比单纯删目录更可靠；③新增 config.ini 的 [AdConfig] 配置写入，从配置层禁用广告；④安装目录自动检测覆盖新版路径 C:\Program Files\Netease\MuMu。选择「自动检测」即可同时尝试新旧所有路径。</div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">
+          <h4>「海外版模式」是什么？如何去除主界面的游戏推荐广告？</h4>
+          <div class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+        </div>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">主界面的轮播Banner和「每日新发现」游戏推荐是 MuMu 国内版特有的运营内容，普通的 hosts 屏蔽和文件修改无法去除。最有效的方法是「海外版模式」：在模拟器的 /system/build.prop 中添加 ro.build.version.overseas=true，让模拟器认为自己是国际版，从而不加载国内运营推荐内容。<br><br>使用前需满足：①模拟器正在运行；②在 设置-其他设置-开发者选项 中开启 Root权限；③开启 磁盘共享-可写系统盘。脚本会自动通过 adb 连接模拟器并写入配置，完成后重启模拟器即可生效。如果 adb 连接失败，也可以手动在模拟器内安装 RE 文件管理器，编辑 /system/build.prop，在末尾添加 ro.build.version.overseas=true 后重启。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <p>MuMu Ad Remover · 作者：玉柒 · 仅供学习交流使用 · 脚本内容完全透明可审查 · 支持 MuMu 12/5.x/6.x</p>
+</footer>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toastText">操作成功</span>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  var state = {
+    version: 'auto',
+    options: {
+      hosts: true,
+      splash: true,
+      config: true,
+      popup: true,
+      overseas: false,
+      updater: false
+    },
+    currentScript: '',
+    currentFileName: ''
+  };
+
+  // ===== 版本选择 =====
+  var versionOptions = document.querySelectorAll('.version-option');
+  versionOptions.forEach(function(opt) {
+    opt.addEventListener('click', function() {
+      versionOptions.forEach(function(o) { o.classList.remove('active'); });
+      opt.classList.add('active');
+      state.version = opt.dataset.version;
+    });
+  });
+
+  // ===== 选项切换 =====
+  var optionItems = document.querySelectorAll('.option-item');
+  optionItems.forEach(function(item) {
+    item.addEventListener('click', function() {
+      var key = item.dataset.option;
+      state.options[key] = !state.options[key];
+      item.classList.toggle('checked', state.options[key]);
+    });
+  });
+
+  // ===== 广告域名列表 =====
+  var AD_DOMAINS = [
+    'mumu.nie.netease.com',
+    'dns4.flxdns.com',
+    'analytics.163.com',
+    'nie.res.netease.com.wscdns.com',
+    'ad.xiaomi.com',
+    'pangle.bytedance.com',
+    'api.ad.xiaomi.com',
+    'data.mistat.xiaomi.com',
+    'adslb.mi-stat.com',
+    'tracking.miui.com',
+    'sdkconfig.ad.xiaomi.com',
+    'cdp.mi.com'
+  ];
+
+  // ===== 数据目录列表（按版本优先级） =====
+  function getDataDirs() {
+    var v = state.version;
+    var dirs = [];
+    if (v === 'old') {
+      dirs.push('%APPDATA%\\Netease\\MuMuPlayer-12.0');
+    } else if (v === 'new') {
+      dirs.push('%APPDATA%\\Netease\\MuMuPlayer');
+    } else {
+      // auto: 新版优先，同时尝试旧版
+      dirs.push('%APPDATA%\\Netease\\MuMuPlayer');
+      dirs.push('%APPDATA%\\Netease\\MuMuPlayer-12.0');
+    }
+    return dirs;
+  }
+
+  // ===== 安装目录列表 =====
+  function getInstallDirs() {
+    var v = state.version;
+    var dirs = [];
+    var names = [];
+    if (v === 'old') {
+      names = ['MuMuPlayer-12.0', 'MuMu Player 12'];
+    } else if (v === 'new') {
+      names = ['MuMuPlayer', 'MuMu'];
+    } else {
+      names = ['MuMuPlayer', 'MuMu', 'MuMuPlayer-12.0', 'MuMu Player 12'];
+    }
+    var roots = [
+      'C:\\Program Files\\Netease',
+      'C:\\Program Files (x86)\\Netease',
+      'D:\\Program Files\\Netease',
+      'D:\\Program Files (x86)\\Netease',
+      'E:\\Program Files\\Netease',
+      '%LOCALAPPDATA%\\Netease',
+      'C:\\Program Files',
+      'D:\\Program Files'
+    ];
+    for (var r = 0; r < roots.length; r++) {
+      for (var n = 0; n < names.length; n++) {
+        dirs.push(roots[r] + '\\' + names[n]);
+      }
+    }
+    return dirs;
+  }
+
+  // ===== 生成去广告脚本 =====
+  function generateAdScript() {
+    var L = [];
+    L.push('@echo off');
+    L.push('chcp 65001 >nul');
+    L.push('title MuMu模拟器一键去广告工具 v2.0');
+    L.push('');
+    L.push('echo ========================================');
+    L.push('echo   MuMu模拟器一键去广告工具 v2.0');
+    L.push('echo   支持: MuMu 12 / 5.x / 6.x');
+    L.push('echo ========================================');
+    L.push('echo.');
+    L.push('');
+    L.push(':: ===== 检查管理员权限 =====');
+    L.push('net session >nul 2>&1');
+    L.push('if %errorLevel% neq 0 (');
+    L.push('    echo [错误] 请右键选择"以管理员身份运行"此脚本！');
+    L.push('    echo.');
+    L.push('    pause');
+    L.push('    exit /b 1');
+    L.push(')');
+    L.push('');
+    L.push(':: ===== 检查模拟器是否运行 =====');
+    L.push('tasklist /fi "imagename eq MuMuPlayer.exe" 2^>nul ^| find /i "MuMuPlayer.exe" >nul');
+    L.push('if %errorLevel% equ 0 (');
+    L.push('    echo [提示] 检测到MuMu模拟器正在运行，建议先关闭后再执行。');
+    L.push('    echo        按任意键继续，或关闭窗口退出...');
+    L.push('    pause >nul');
+    L.push(')');
+    L.push('echo.');
+    L.push('');
+
+    // 计算总步骤
+    var step = 1;
+    var totalSteps = 1; // DNS刷新
+    if (state.options.hosts) totalSteps++;
+    if (state.options.splash) totalSteps++;
+    if (state.options.config) totalSteps++;
+    if (state.options.popup || state.options.updater) totalSteps++;
+    if (state.options.overseas) totalSteps++;
+
+    // ===== 1. Hosts 屏蔽 =====
+    if (state.options.hosts) {
+      L.push(':: ============================================');
+      L.push(':: 步骤 ' + step + ': 屏蔽广告域名 (Hosts)');
+      L.push(':: ============================================');
+      L.push('echo [' + step + '/' + totalSteps + '] 正在备份并修改hosts文件...');
+      L.push('set "HOSTS_FILE=%SystemRoot%\\System32\\drivers\\etc\\hosts"');
+      L.push('');
+      L.push(':: 备份hosts文件（仅首次）');
+      L.push('if not exist "%HOSTS_FILE%.bak" (');
+      L.push('    copy "%HOSTS_FILE%" "%HOSTS_FILE%.bak" >nul');
+      L.push('    echo       [OK] 已备份 hosts 文件为 hosts.bak');
+      L.push(') else (');
+      L.push('    echo       [--] hosts 备份已存在，跳过备份');
+      L.push(')');
+      L.push('');
+      L.push(':: 检查并添加广告域名屏蔽规则');
+      L.push('findstr /c:"mumu.nie.netease.com" "%HOSTS_FILE%" >nul 2>&1');
+      L.push('if %errorLevel% neq 0 (');
+      L.push('    echo. >> "%HOSTS_FILE%"');
+      L.push('    echo # === MuMu模拟器广告屏蔽 [开始] === >> "%HOSTS_FILE%"');
+      for (var i = 0; i < AD_DOMAINS.length; i++) {
+        L.push('    echo 127.0.0.1 ' + AD_DOMAINS[i] + ' >> "%HOSTS_FILE%"');
+      }
+      L.push('    echo # === MuMu模拟器广告屏蔽 [结束] === >> "%HOSTS_FILE%"');
+      L.push('    echo       [OK] 已添加 ' + AD_DOMAINS.length + ' 条广告域名屏蔽规则');
+      L.push(') else (');
+      L.push('    echo       [--] 广告屏蔽规则已存在，跳过');
+      L.push(')');
+      L.push('echo.');
+      L.push('');
+      step++;
+    }
+
+    // ===== 2. 开屏广告 =====
+    if (state.options.splash) {
+      var dataDirs = getDataDirs();
+      L.push(':: ============================================');
+      L.push(':: 步骤 ' + step + ': 去除开屏广告');
+      L.push(':: ============================================');
+      L.push('echo [' + step + '/' + totalSteps + '] 正在处理开屏广告...');
+      L.push('');
+
+      for (var d = 0; d < dataDirs.length; d++) {
+        var dir = dataDirs[d];
+        L.push(':: --- 尝试路径: ' + dir + ' ---');
+        L.push('set "DATA_DIR=' + dir + '"');
+        L.push('set "STARTUP_DIR=%DATA_DIR%\\data\\startupImage"');
+        L.push('set "IMG_MGR=%STARTUP_DIR%\\imageManager.json"');
+        L.push('');
+        L.push('if exist "%DATA_DIR%" (');
+        L.push('    echo       [路径] 找到数据目录: %DATA_DIR%');
+        L.push('');
+        L.push('    :: 方法1: 覆写 imageManager.json 并设为只读（新版推荐）');
+        L.push('    if exist "%STARTUP_DIR%" (');
+        L.push('        if exist "%IMG_MGR%" (');
+        L.push('            echo {"images":[],"version":0} > "%IMG_MGR%"');
+        L.push('            attrib +r "%IMG_MGR%"');
+        L.push('            echo       [OK] imageManager.json 已清空并锁定');
+        L.push('        ) else (');
+        L.push('            echo {"images":[],"version":0} > "%IMG_MGR%"');
+        L.push('            attrib +r "%IMG_MGR%"');
+        L.push('            echo       [OK] imageManager.json 已创建并锁定');
+        L.push('        )');
+        L.push('    )');
+        L.push('');
+        L.push('    :: 方法2: 删除 startupImage 目录，创建同名空文件锁定（双重保障）');
+        L.push('    if exist "%STARTUP_DIR%" (');
+        L.push('        if exist "%STARTUP_DIR%\\*" (');
+        L.push('            rmdir /s /q "%STARTUP_DIR%" 2>nul');
+        L.push('            type nul > "%STARTUP_DIR%"');
+        L.push('            attrib +r "%STARTUP_DIR%"');
+        L.push('            echo       [OK] startupImage 目录已锁定');
+        L.push('        ) else (');
+        L.push('            echo       [--] startupImage 已是锁定状态');
+        L.push('        )');
+        L.push('    ) else (');
+        L.push('        if not exist "%DATA_DIR%\\data" mkdir "%DATA_DIR%\\data"');
+        L.push('        type nul > "%STARTUP_DIR%"');
+        L.push('        attrib +r "%STARTUP_DIR%"');
+        L.push('        echo       [OK] startupImage 已预锁定');
+        L.push('    )');
+        L.push('    goto :splash_done');
+        L.push(')');
+        L.push('');
+      }
+      L.push('echo       [!!] 未找到任何MuMu数据目录，跳过开屏广告处理');
+      L.push(':splash_done');
+      L.push('echo.');
+      L.push('');
+      step++;
+    }
+
+    // ===== 3. Config.ini 广告配置 =====
+    if (state.options.config) {
+      L.push(':: ============================================');
+      L.push(':: 步骤 ' + step + ': 修改广告配置 (config.ini)');
+      L.push(':: ============================================');
+      L.push('echo [' + step + '/' + totalSteps + '] 正在修改广告配置文件...');
+      L.push('');
+      L.push('set "CONFIG_DIR=%LOCALAPPDATA%\\MuMu\\emulator\\nemu"');
+      L.push('set "CONFIG_FILE=%CONFIG_DIR%\\config.ini"');
+      L.push('');
+      L.push('if exist "%CONFIG_DIR%" (');
+      L.push('    echo       [路径] 找到配置目录: %CONFIG_DIR%');
+      L.push('');
+      L.push('    :: 备份配置文件');
+      L.push('    if not exist "%CONFIG_FILE%.bak" (');
+      L.push('        copy "%CONFIG_FILE%" "%CONFIG_FILE%.bak" >nul 2>&1');
+      L.push('        echo       [OK] config.ini 已备份');
+      L.push('    )');
+      L.push('');
+      L.push('    :: 检查是否已有 AdConfig 段');
+      L.push('    findstr /c:"[AdConfig]" "%CONFIG_FILE%" >nul 2>&1');
+      L.push('    if %errorLevel% neq 0 (');
+      L.push('        echo. >> "%CONFIG_FILE%"');
+      L.push('        echo [AdConfig] >> "%CONFIG_FILE%"');
+      L.push('        echo enable_ad=0 >> "%CONFIG_FILE%"');
+      L.push('        echo personalized_recommend=0 >> "%CONFIG_FILE%"');
+      L.push('        echo push_service_url=https://null.mumu.net >> "%CONFIG_FILE%"');
+      L.push('        echo sdk_load_mode=0 >> "%CONFIG_FILE%"');
+      L.push('        echo splash_ad_enable=0 >> "%CONFIG_FILE%"');
+      L.push('        echo popup_ad_enable=0 >> "%CONFIG_FILE%"');
+      L.push('        echo       [OK] 已写入 [AdConfig] 广告禁用配置');
+      L.push('    ) else (');
+      L.push('        echo       [--] [AdConfig] 段已存在，跳过');
+      L.push('    )');
+      L.push('')
+      L.push('    :: 锁定配置文件防止被覆盖');
+      L.push('    attrib +r "%CONFIG_FILE%" 2>nul');
+      L.push('    echo       [OK] config.ini 已设为只读');
+      L.push(') else (');
+      L.push('    echo       [!!] 未找到配置目录 %CONFIG_DIR%，跳过');
+      L.push('    echo            （部分版本可能使用其他配置路径）');
+      L.push(')');
+      L.push('echo.');
+      L.push('');
+      step++;
+    }
+
+    // ===== 4. 弹窗广告服务 + 自动更新 =====
+    if (state.options.popup || state.options.updater) {
+      var installDirs = getInstallDirs();
+      L.push(':: ============================================');
+      L.push(':: 步骤 ' + step + ': 禁用广告服务/更新服务');
+      L.push(':: ============================================');
+      L.push('echo [' + step + '/' + totalSteps + '] 正在处理服务文件...');
+      L.push('');
+      L.push('set "MUMU_DIR="');
+      L.push('');
+
+      for (var id = 0; id < installDirs.length; id++) {
+        var idir = installDirs[id];
+        L.push('if not defined MUMU_DIR if exist "' + idir + '\\shell" set "MUMU_DIR=' + idir + '"');
+      }
+      L.push('');
+      L.push('if defined MUMU_DIR (');
+      L.push('    echo       [路径] 找到安装目录: %MUMU_DIR%');
+      L.push('');
+
+      if (state.options.popup) {
+        L.push('    :: 禁用弹窗广告服务 MuMuPlayerService.exe');
+        L.push('    if exist "%MUMU_DIR%\\shell\\MuMuPlayerService.exe" (');
+        L.push('        attrib -r "%MUMU_DIR%\\shell\\MuMuPlayerService.exe" 2>nul');
+        L.push('        del /f /q "%MUMU_DIR%\\shell\\MuMuPlayerService.exe" 2>nul');
+        L.push('        type nul > "%MUMU_DIR%\\shell\\MuMuPlayerService.exe"');
+        L.push('        attrib +r "%MUMU_DIR%\\shell\\MuMuPlayerService.exe"');
+        L.push('        echo       [OK] MuMuPlayerService.exe 弹窗广告服务已禁用');
+        L.push('    ) else (');
+        L.push('        echo       [--] 未找到 MuMuPlayerService.exe');
+        L.push('    )');
+        L.push('');
+      }
+
+      if (state.options.updater) {
+        L.push('    :: 禁用自动更新服务 MuMuPlayerUpdater.exe');
+        L.push('    if exist "%MUMU_DIR%\\shell\\MuMuPlayerUpdater.exe" (');
+        L.push('        attrib -r "%MUMU_DIR%\\shell\\MuMuPlayerUpdater.exe" 2>nul');
+        L.push('        del /f /q "%MUMU_DIR%\\shell\\MuMuPlayerUpdater.exe" 2>nul');
+        L.push('        type nul > "%MUMU_DIR%\\shell\\MuMuPlayerUpdater.exe"');
+        L.push('        attrib +r "%MUMU_DIR%\\shell\\MuMuPlayerUpdater.exe"');
+        L.push('        echo       [OK] MuMuPlayerUpdater.exe 自动更新服务已禁用');
+        L.push('    ) else (');
+        L.push('        echo       [--] 未找到 MuMuPlayerUpdater.exe');
+        L.push('    )');
+        L.push('');
+      }
+
+      L.push(') else (');
+      L.push('    echo       [!!] 未自动检测到MuMu安装目录');
+      L.push('    echo            请手动编辑此脚本，将 MUMU_DIR 改为你的安装路径');
+      L.push(')');
+      L.push('echo.');
+      L.push('');
+      step++;
+    }
+
+    // ===== 5. 海外版模式 (build.prop) =====
+    if (state.options.overseas) {
+      L.push(':: ============================================');
+      L.push(':: 步骤 ' + step + ': 海外版模式 (去除主界面推荐)');
+      L.push(':: ============================================');
+      L.push('echo [' + step + '/' + totalSteps + '] 正在配置海外版模式...');
+      L.push('echo.');
+      L.push(':: 前置检查: 确认模拟器正在运行');
+      L.push('echo       [信息] 正在通过 adb 连接模拟器...');
+      L.push('echo       [信息] 请确保模拟器已启动，并在设置中开启了 Root权限 和 可写系统盘');
+      L.push('');
+      L.push(':: 查找 adb.exe');
+      L.push('set "ADB_EXE="');
+      L.push('if defined MUMU_DIR (');
+      L.push('    if exist "%MUMU_DIR%\\shell\\adb.exe" set "ADB_EXE=%MUMU_DIR%\\shell\\adb.exe"');
+      L.push('    if exist "%MUMU_DIR%\\adb.exe" set "ADB_EXE=%MUMU_DIR%\\adb.exe"');
+      L.push('    if exist "%MUMU_DIR%\\vbox\\adb.exe" set "ADB_EXE=%MUMU_DIR%\\vbox\\adb.exe"');
+      L.push(')');
+      L.push('');
+      L.push(':: 如果没找到，尝试系统adb');
+      L.push('if not defined ADB_EXE (');
+      L.push('    where adb >nul 2>&1 && set "ADB_EXE=adb"');
+      L.push(')');
+      L.push('');
+      L.push('if defined ADB_EXE (');
+      L.push('    echo       [OK] 找到 adb 工具: %ADB_EXE%');
+      L.push('');
+      L.push('    :: 尝试连接多个常见端口');
+      L.push('    set "ADB_CONNECTED="');
+      L.push('    for %%P in (7555 16384 21503 5555 62001 62025) do (');
+      L.push('        if not defined ADB_CONNECTED (');
+      L.push('            "%ADB_EXE%" connect 127.0.0.1:%%P >nul 2>&1');
+      L.push('            timeout /t 1 /nobreak >nul');
+      L.push('            "%ADB_EXE%" devices 2>nul | find "%%P" >nul && set "ADB_CONNECTED=127.0.0.1:%%P"');
+      L.push('        )');
+      L.push('    )');
+      L.push('');
+      L.push('    if defined ADB_CONNECTED (');
+      L.push('        echo       [OK] 已连接模拟器: %ADB_CONNECTED%');
+      L.push('');
+      L.push('        :: 获取 root 权限');
+      L.push('        "%ADB_EXE%" -s %ADB_CONNECTED% root >nul 2>&1');
+      L.push('        timeout /t 2 /nobreak >nul');
+      L.push('');
+      L.push('        :: 重新连接（root后端口可能变化）');
+      L.push('        "%ADB_EXE%" connect %ADB_CONNECTED% >nul 2>&1');
+      L.push('        timeout /t 1 /nobreak >nul');
+      L.push('');
+      L.push('        :: 挂载 /system 为可写');
+      L.push('        "%ADB_EXE%" -s %ADB_CONNECTED% remount >nul 2>&1');
+      L.push('');
+      L.push('        :: 检查是否已有 overseas 配置');
+      L.push('        "%ADB_EXE%" -s %ADB_CONNECTED% shell "grep -q ro.build.version.overseas /system/build.prop && echo EXISTS || echo NOTFOUND" > "%TEMP%\\mumu_overseas_check.txt" 2>&1');
+      L.push('        find /i "EXISTS" "%TEMP%\\mumu_overseas_check.txt" >nul 2>&1');
+      L.push('');
+      L.push('        if %errorLevel% equ 0 (');
+      L.push('            echo       [--] build.prop 中已存在 overseas 配置，跳过');
+      L.push('        ) else (');
+      L.push('            :: 备份 build.prop');
+      L.push('            "%ADB_EXE%" -s %ADB_CONNECTED% shell "cp /system/build.prop /system/build.prop.bak" >nul 2>&1');
+      L.push('');
+      L.push('            :: 添加 overseas 配置');
+      L.push('            "%ADB_EXE%" -s %ADB_CONNECTED% shell "echo ro.build.version.overseas=true >> /system/build.prop" >nul 2>&1');
+      L.push('');
+      L.push('            :: 验证是否写入成功');
+      L.push('            "%ADB_EXE%" -s %ADB_CONNECTED% shell "grep ro.build.version.overseas /system/build.prop" > "%TEMP%\\mumu_overseas_verify.txt" 2>&1');
+      L.push('            find /i "overseas=true" "%TEMP%\\mumu_overseas_verify.txt" >nul 2>&1');
+      L.push('            if %errorLevel% equ 0 (');
+      L.push('                echo       [OK] 已成功写入 ro.build.version.overseas=true');
+      L.push('                echo       [OK] 海外版模式已启用，主界面推荐广告将被屏蔽');
+      L.push('            ) else (');
+      L.push('                echo       [!!] 写入失败，请确认已开启 Root权限 和 可写系统盘');
+      L.push('                echo            手动方法: 模拟器内安装RE文件管理器，编辑 /system/build.prop');
+      L.push('                echo            在末尾添加一行: ro.build.version.overseas=true');
+      L.push('            )');
+      L.push('        )');
+      L.push('');
+      L.push('        :: 清理临时文件');
+      L.push('        del /f /q "%TEMP%\\mumu_overseas_check.txt" 2>nul');
+      L.push('        del /f /q "%TEMP%\\mumu_overseas_verify.txt" 2>nul');
+      L.push('');
+      L.push('        echo.');
+      L.push('        echo       [重要] 海外版模式需要重启模拟器才能生效！');
+      L.push('    ) else (');
+      L.push('        echo       [!!] 无法连接到模拟器，请确认:');
+      L.push('            1. 模拟器正在运行');
+      L.push('            2. 已在 设置 - 其他设置 - 开发者选项 中开启 Root权限');
+      L.push('            3. 已开启 磁盘共享 - 可写系统盘');
+      L.push('    )');
+      L.push(') else (');
+      L.push('    echo       [!!] 未找到 adb 工具，跳过海外版模式配置');
+      L.push('    echo            你可以手动配置: 模拟器内安装RE文件管理器，编辑 /system/build.prop');
+      L.push('    echo            在末尾添加一行: ro.build.version.overseas=true，然后重启模拟器');
+      L.push(')');
+      L.push('echo.');
+      L.push('');
+      step++;
+    }
+
+    // ===== 最后: 刷新DNS =====
+    L.push(':: ============================================');
+    L.push(':: 步骤 ' + step + ': 刷新DNS缓存');
+    L.push(':: ============================================');
+    L.push('echo [' + step + '/' + totalSteps + '] 正在刷新DNS缓存...');
+    L.push('ipconfig /flushdns >nul 2>&1');
+    L.push('echo       [OK] DNS缓存已刷新');
+    L.push('echo.');
+    L.push('');
+    L.push('echo ========================================');
+    L.push('echo   去广告操作全部完成！');
+    L.push('echo ========================================');
+    L.push('echo.');
+    L.push('echo 请关闭并重新打开MuMu模拟器，广告已全部去除。');
+    L.push('echo.');
+    L.push('echo 如需还原，请运行配套的还原脚本 mumu_ad_restore.bat');
+    L.push('echo.');
+    L.push('pause');
+
+    return L.join('\r\n');
+  }
+
+  // ===== 生成还原脚本 =====
+  function generateRestoreScript() {
+    var L = [];
+    L.push('@echo off');
+    L.push('chcp 65001 >nul');
+    L.push('title MuMu模拟器去广告还原工具 v2.0');
+    L.push('');
+    L.push('echo ========================================');
+    L.push('echo   MuMu模拟器去广告还原工具 v2.0');
+    L.push('echo ========================================');
+    L.push('echo.');
+    L.push('');
+    L.push(':: ===== 检查管理员权限 =====');
+    L.push('net session >nul 2>&1');
+    L.push('if %errorLevel% neq 0 (');
+    L.push('    echo [错误] 请右键选择"以管理员身份运行"此脚本！');
+    L.push('    pause');
+    L.push('    exit /b 1');
+    L.push(')');
+    L.push('echo.');
+    L.push('');
+
+    // 1. 还原 hosts
+    L.push('echo [1/6] 正在还原hosts文件...');
+    L.push('set "HOSTS_FILE=%SystemRoot%\\System32\\drivers\\etc\\hosts"');
+    L.push('if exist "%HOSTS_FILE%.bak" (');
+    L.push('    attrib -r "%HOSTS_FILE%" 2>nul');
+    L.push('    copy /y "%HOSTS_FILE%.bak" "%HOSTS_FILE%" >nul');
+    L.push('    del /f /q "%HOSTS_FILE%.bak" 2>nul');
+    L.push('    echo       [OK] hosts文件已从备份还原');
+    L.push(') else (');
+    L.push('    echo       [--] 未找到备份文件，正在手动移除广告屏蔽规则...');
+    L.push('    attrib -r "%HOSTS_FILE%" 2>nul');
+    L.push('    powershell -Command "$c = Get-Content \'%HOSTS_FILE%\'; $c = $c | Where-Object { $_ -notmatch \'mumu\\.nie\\.netease\\.com|dns4\\.flxdns\\.com|analytics\\.163\\.com|nie\\.res\\.netease\\.com|ad\\.xiaomi\\.com|pangle\\.bytedance\\.com|api\\.ad\\.xiaomi\\.com|data\\.mistat\\.xiaomi\\.com|adslb\\.mi-stat\\.com|tracking\\.miui\\.com|sdkconfig\\.ad\\.xiaomi\\.com|cdp\\.mi\\.com|MuMu.*广告屏蔽\' }; Set-Content -Path \'%HOSTS_FILE%\' -Value $c -Encoding ASCII"');
+    L.push('    echo       [OK] 广告屏蔽规则已移除');
+    L.push(')');
+    L.push('echo.');
+    L.push('');
+
+    // 2. 还原开屏广告
+    var dataDirs = getDataDirs();
+    L.push('echo [2/6] 正在还原开屏广告目录...');
+    for (var d = 0; d < dataDirs.length; d++) {
+      var dir = dataDirs[d];
+      L.push('set "DATA_DIR=' + dir + '"');
+      L.push('set "STARTUP_DIR=%DATA_DIR%\\data\\startupImage"');
+      L.push('set "IMG_MGR=%STARTUP_DIR%\\imageManager.json"');
+      L.push('if exist "%DATA_DIR%" (');
+      L.push('    echo       [路径] 找到数据目录: %DATA_DIR%');
+      L.push('    if exist "%IMG_MGR%" (');
+      L.push('        attrib -r "%IMG_MGR%" 2>nul');
+      L.push('        del /f /q "%IMG_MGR%" 2>nul');
+      L.push('        echo       [OK] imageManager.json 锁定已解除');
+      L.push('    )');
+      L.push('    if exist "%STARTUP_DIR%" (');
+      L.push('        if not exist "%STARTUP_DIR%\\*" (');
+      L.push('            attrib -r "%STARTUP_DIR%" 2>nul');
+      L.push('            del /f /q "%STARTUP_DIR%" 2>nul');
+      L.push('            mkdir "%STARTUP_DIR%" 2>nul');
+      L.push('            echo       [OK] startupImage 目录已还原');
+      L.push('        ) else (');
+      L.push('            attrib -r "%STARTUP_DIR%" 2>nul');
+      L.push('            echo       [--] startupImage 已是正常目录');
+      L.push('        )');
+      L.push('    )');
+      L.push('    goto :splash_restore_done');
+      L.push(')');
+    }
+    L.push('echo       [--] 未找到数据目录，跳过');
+    L.push(':splash_restore_done');
+    L.push('echo.');
+    L.push('');
+
+    // 3. 还原 config.ini
+    L.push('echo [3/6] 正在还原config.ini配置...');
+    L.push('set "CONFIG_DIR=%LOCALAPPDATA%\\MuMu\\emulator\\nemu"');
+    L.push('set "CONFIG_FILE=%CONFIG_DIR%\\config.ini"');
+    L.push('if exist "%CONFIG_DIR%" (');
+    L.push('    attrib -r "%CONFIG_FILE%" 2>nul');
+    L.push('    if exist "%CONFIG_FILE%.bak" (');
+    L.push('        copy /y "%CONFIG_FILE%.bak" "%CONFIG_FILE%" >nul');
+    L.push('        del /f /q "%CONFIG_FILE%.bak" 2>nul');
+    L.push('        echo       [OK] config.ini 已从备份还原');
+    L.push('    ) else (');
+    L.push('        echo       [--] 未找到备份，正在手动移除AdConfig段...');
+    L.push('        powershell -Command "$c = Get-Content \'%CONFIG_FILE%\'; $inBlock=$false; $out=@(); foreach($line in $c){ if($line -match \'^\\[AdConfig\\]\'){$inBlock=$true; continue} if($inBlock -and $line -match \'^\\[\'){$inBlock=$false} if(-not $inBlock){$out+=$line} }; Set-Content -Path \'%CONFIG_FILE%\' -Value $out -Encoding UTF8"');
+    L.push('        echo       [OK] AdConfig 段已移除');
+    L.push('    )');
+    L.push(') else (');
+    L.push('    echo       [--] 未找到配置目录，跳过');
+    L.push(')');
+    L.push('echo.');
+    L.push('');
+
+    // 4. 还原服务文件
+    var installDirs = getInstallDirs();
+    L.push('echo [4/6] 正在还原服务文件...');
+    L.push('set "MUMU_DIR="');
+    for (var id = 0; id < installDirs.length; id++) {
+      L.push('if not defined MUMU_DIR if exist "' + installDirs[id] + '\\shell" set "MUMU_DIR=' + installDirs[id] + '"');
+    }
+    L.push('if defined MUMU_DIR (');
+    L.push('    echo       [路径] 找到安装目录: %MUMU_DIR%');
+    L.push('    if exist "%MUMU_DIR%\\shell\\MuMuPlayerService.exe" (');
+    L.push('        attrib -r "%MUMU_DIR%\\shell\\MuMuPlayerService.exe" 2>nul');
+    L.push('        del /f /q "%MUMU_DIR%\\shell\\MuMuPlayerService.exe" 2>nul');
+    L.push('        echo       [OK] MuMuPlayerService.exe 占位文件已移除');
+    L.push('    )');
+    L.push('    if exist "%MUMU_DIR%\\shell\\MuMuPlayerUpdater.exe" (');
+    L.push('        attrib -r "%MUMU_DIR%\\shell\\MuMuPlayerUpdater.exe" 2>nul');
+    L.push('        del /f /q "%MUMU_DIR%\\shell\\MuMuPlayerUpdater.exe" 2>nul');
+    L.push('        echo       [OK] MuMuPlayerUpdater.exe 占位文件已移除');
+    L.push('    )');
+    L.push('    echo.');
+    L.push('    echo       [注意] 原始服务文件已被删除，需重新安装MuMu模拟器才能完全恢复');
+    L.push(') else (');
+    L.push('    echo       [--] 未检测到安装目录，跳过');
+    L.push(')');
+    L.push('echo.');
+    L.push('');
+
+    // 5. 还原 build.prop (海外版模式)
+    L.push('echo [5/6] 正在还原build.prop配置...');
+    L.push('set "ADB_EXE="');
+    L.push('if defined MUMU_DIR (');
+    L.push('    if exist "%MUMU_DIR%\\shell\\adb.exe" set "ADB_EXE=%MUMU_DIR%\\shell\\adb.exe"');
+    L.push('    if exist "%MUMU_DIR%\\adb.exe" set "ADB_EXE=%MUMU_DIR%\\adb.exe"');
+    L.push(')');
+    L.push('if not defined ADB_EXE where adb >nul 2>&1 && set "ADB_EXE=adb"');
+    L.push('');
+    L.push('if defined ADB_EXE (');
+    L.push('    set "ADB_CONNECTED="');
+    L.push('    for %%P in (7555 16384 21503 5555 62001 62025) do (');
+    L.push('        if not defined ADB_CONNECTED (');
+    L.push('            "%ADB_EXE%" connect 127.0.0.1:%%P >nul 2>&1');
+    L.push('            timeout /t 1 /nobreak >nul');
+    L.push('            "%ADB_EXE%" devices 2>nul | find "%%P" >nul && set "ADB_CONNECTED=127.0.0.1:%%P"');
+    L.push('        )');
+    L.push('    )');
+    L.push('    if defined ADB_CONNECTED (');
+    L.push('        echo       [OK] 已连接模拟器: %ADB_CONNECTED%');
+    L.push('        "%ADB_EXE%" -s %ADB_CONNECTED% root >nul 2>&1');
+    L.push('        timeout /t 2 /nobreak >nul');
+    L.push('        "%ADB_EXE%" connect %ADB_CONNECTED% >nul 2>&1');
+    L.push('        timeout /t 1 /nobreak >nul');
+    L.push('        "%ADB_EXE%" -s %ADB_CONNECTED% remount >nul 2>&1');
+    L.push('        :: 优先从备份恢复');
+    L.push('        "%ADB_EXE%" -s %ADB_CONNECTED% shell "if [ -f /system/build.prop.bak ]; then cp /system/build.prop.bak /system/build.prop && echo RESTORED; else echo NOBACKUP; fi" > "%TEMP%\\mumu_restore_check.txt" 2>&1');
+    L.push('        find /i "RESTORED" "%TEMP%\\mumu_restore_check.txt" >nul 2>&1');
+    L.push('        if %errorLevel% equ 0 (');
+    L.push('            echo       [OK] build.prop 已从备份还原');
+    L.push('        ) else (');
+    L.push('            :: 没有备份则删除 overseas 行');
+    L.push('            "%ADB_EXE%" -s %ADB_CONNECTED% shell "sed -i /ro.build.version.overseas/d /system/build.prop" >nul 2>&1');
+    L.push('            echo       [OK] 已移除 overseas 配置行');
+    L.push('        )');
+    L.push('        del /f /q "%TEMP%\\mumu_restore_check.txt" 2>nul');
+    L.push('        echo       [重要] 请重启模拟器使还原生效');
+    L.push('    ) else (');
+    L.push('        echo       [--] 未连接到模拟器，跳过 build.prop 还原');
+    L.push('    )');
+    L.push(') else (');
+    L.push('    echo       [--] 未找到 adb 工具，跳过 build.prop 还原');
+    L.push(')');
+    L.push('echo.');
+    L.push('');
+
+    // 6. 刷新DNS
+    L.push('echo [6/6] 正在刷新DNS缓存...');
+    L.push('ipconfig /flushdns >nul 2>&1');
+    L.push('echo       [OK] DNS缓存已刷新');
+    L.push('echo.');
+    L.push('');
+    L.push('echo ========================================');
+    L.push('echo   还原操作完成！');
+    L.push('echo ========================================');
+    L.push('echo.');
+    L.push('echo 注意：部分被替换的系统文件可能需要重新安装MuMu模拟器才能完全恢复。');
+    L.push('echo.');
+    L.push('pause');
+
+    return L.join('\r\n');
+  }
+
+  // ===== 平滑滚动 =====
+  function smoothScrollTo(el) {
+    var target = el.getBoundingClientRect().top + window.pageYOffset - 80;
+    var start = window.pageYOffset;
+    var distance = target - start;
+    var duration = 400;
+    var startTime = null;
+    function animate(currentTime) {
+      if (!startTime) startTime = currentTime;
+      var elapsed = currentTime - startTime;
+      var progress = Math.min(elapsed / duration, 1);
+      var ease = progress < 0.5 ? 2 * progress * progress : -1 + (4 - 2 * progress) * progress;
+      window.scrollTo(0, start + distance * ease);
+      if (elapsed < duration) requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+  }
+
+  // ===== 显示脚本预览 =====
+  function showScript(script, fileName) {
+    state.currentScript = script;
+    state.currentFileName = fileName;
+    document.getElementById('scriptContent').textContent = script;
+    document.getElementById('previewFileName').textContent = fileName;
+    document.getElementById('scriptPreview').classList.add('show');
+    setTimeout(function() {
+      smoothScrollTo(document.getElementById('scriptPreview'));
+    }, 100);
+  }
+
+  // ===== 下载文件 =====
+  function downloadFile(content, fileName) {
+    var blob = new Blob([content], { type: 'application/octet-stream;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // ===== 复制 =====
+  function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function() {
+        showToast('脚本已复制到剪贴板');
+      }).catch(function() {
+        fallbackCopy(text);
+      });
+    } else {
+      fallbackCopy(text);
+    }
+  }
+
+  function fallbackCopy(text) {
+    var textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      showToast('脚本已复制到剪贴板');
+    } catch (e) {
+      showToast('复制失败，请手动选择复制');
+    }
+    document.body.removeChild(textarea);
+  }
+
+  // ===== Toast =====
+  var toastTimer;
+  function showToast(msg) {
+    var toast = document.getElementById('toast');
+    document.getElementById('toastText').textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function() {
+      toast.classList.remove('show');
+    }, 2500);
+  }
+
+  // ===== 事件绑定 =====
+  document.getElementById('generateBtn').addEventListener('click', function() {
+    var script = generateAdScript();
+    showScript(script, 'mumu_ad_remover.bat');
+    showToast('去广告脚本已生成');
+  });
+
+  document.getElementById('generateRestoreBtn').addEventListener('click', function() {
+    var script = generateRestoreScript();
+    showScript(script, 'mumu_ad_restore.bat');
+    showToast('还原脚本已生成');
+  });
+
+  document.getElementById('restoreBtnBottom').addEventListener('click', function() {
+    var script = generateRestoreScript();
+    showScript(script, 'mumu_ad_restore.bat');
+    smoothScrollTo(document.getElementById('generator'));
+    showToast('还原脚本已生成');
+  });
+
+  document.getElementById('downloadBtn').addEventListener('click', function() {
+    if (state.currentScript) {
+      downloadFile(state.currentScript, state.currentFileName);
+      showToast('脚本已开始下载');
+    }
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', function() {
+    if (state.currentScript) {
+      copyToClipboard(state.currentScript);
+    }
+  });
+
+  // ===== FAQ =====
+  var faqItems = document.querySelectorAll('.faq-item');
+  faqItems.forEach(function(item) {
+    item.querySelector('.faq-question').addEventListener('click', function() {
+      var wasOpen = item.classList.contains('open');
+      faqItems.forEach(function(i) { i.classList.remove('open'); });
+      if (!wasOpen) item.classList.add('open');
+    });
+  });
+
+})();
+</script>
+
+</body>
+</html>
